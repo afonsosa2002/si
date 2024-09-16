@@ -1,8 +1,8 @@
-__author__ = "Afonso Sá"
-__credits__ = ["Afonso Sá"]
+__author__ = "Afonso Sa"
+__credits__ = ["Afonso Sa"]
 __license__ = "Apache License 2.0"
 __version__ = "0.0.1"
-__maintainer__ = "Afonso Sá"
+__maintainer__ = "Afonso Sa"
 __email__ = "afonsosa2002@gmail.com"
 
 # -----------------------------------------------------------------------------------

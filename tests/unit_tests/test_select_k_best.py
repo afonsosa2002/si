@@ -18,8 +18,8 @@ class TestSelectBest(TestCase):
         select_k_best = SelectBest(score_func = f_classification, k = 2)
         
         select_k_best.fit(self.dataset)
-        self.assertTrue(select_k_best.F != None)
-        self.assertTrue(select_k_best.p != None)
+        self.assertTrue(select_k_best.F.shape[0]> 0)
+        self.assertTrue(select_k_best.p.shape[0]> 0)
         
     def test_transform(self):
         select_k_best = SelectBest(score_func = f_classification, k = 2)

@@ -24,5 +24,7 @@ class TestVarianceThreshold(TestCase):
         for p_value in p:
             if p_value < 0.05
                 significant_different.append(True)
+            else:
+                significant_different.append(True)
             
-                significant_different.append(False)
+

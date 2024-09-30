@@ -1,7 +1,7 @@
 from si.base.estimator import Estimator
 from si.base.transformer import Transformer
 from si.data.dataset import Dataset
-import nunpy
+import numpy as np
 
 class SelectBest(Transformer):
     
@@ -22,7 +22,7 @@ class SelectBest(Transformer):
         idx = np.argsort(self.F)
         mask = idx[-self.k:]
         new_X = self.dataset.X[:, mask]
-        new_features = self.dataset.features = new_features, y=dataset.y, label=dataset.label)
+        new_features = np.array(dataset.features)[idx]
         
-        return
+        return Dataset(X=new_X, y=dataset.y, features=new_features, label=dataset.label)
 

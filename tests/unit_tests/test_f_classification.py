@@ -6,7 +6,7 @@ from si.io.csv_file import read_csv
 
 
 
-class TestVarianceThreshold(TestCase):
+class TestFclassification(TestCase):
 
     def setUp(self):
         self.csv_file = os.path.join(DATASETS_PATH, 'iris', 'iris.csv')
@@ -26,5 +26,5 @@ class TestVarianceThreshold(TestCase):
                 significant_different.append(True)
             else:
                 significant_different.append(True)
-            
+        return 
 

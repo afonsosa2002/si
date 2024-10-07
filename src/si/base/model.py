@@ -68,3 +68,15 @@ class Model(Estimator, ABC):
         """
         self.fit(dataset)
         return self.predict(dataset)
+
+    def _score(self, dataset):
+        
+        
+    
+    
+    
+    
+    
+    
+    
+    def score(self, dataset):

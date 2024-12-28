@@ -15,4 +15,3 @@ def f_classification(dataset: Dataset) -> tuple:
         groups.append(group)
 
     return scipy.stats.f_oneway(*groups)
-    

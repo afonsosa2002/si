@@ -41,3 +41,26 @@ def train_test_split(dataset: Dataset, test_size: float = 0.2, random_state: int
     train = Dataset(dataset.X[train_idxs], dataset.y[train_idxs], features=dataset.features, label=dataset.label)
     test = Dataset(dataset.X[test_idxs], dataset.y[test_idxs], features=dataset.features, label=dataset.label)
     return train, test
+
+def stratified_train_test_split(data, test_size: float, random_state: int = None) -> Tuple:
+    if random_state is not None:
+        np.random.seed(random_state)
+    target = data.labels  
+    unique_classes, class_counts = np.unique(target, return_counts=True)
+    train_indices = []
+    test_indices = []
+
+    for class_label, class_count in zip(unique_classes, class_counts):
+        class_indices = np.where(target == class_label)[0]
+        n_test_samples = int(class_count * test_size)
+        np.random.shuffle(class_indices)
+
+        test_indices_class = class_indices[:n_test_samples]
+        test_indices.extend(test_indices_class)
+
+        train_indices_class = class_indices[n_test_samples:]
+        train_indices.extend(train_indices_class)
+
+    train_data = data.select(train_indices)  
+    test_data = data.select(test_indices)  
+    return train_data, test_data

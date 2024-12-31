@@ -141,3 +141,33 @@ class DenseLayer(Layer):
             The shape of the output of the layer.
         """
         return (self.n_units,) 
+
+class Dropout(Layer):
+    def __init__(self, probability):
+        if not 0 <= probability < 1:
+            raise ValueError("Error")
+        self.probability = probability
+        self.mask = None
+        self.input = None
+        self.output = None
+
+    def forward_propagation(self, input, training=True):
+        self.input = input
+        if training:
+            scaling_factor = 1 / (1 - self.probability)
+            self.mask = np.random.binomial(1, 1 - self.probability, size=input.shape)
+            self.output = input * self.mask * scaling_factor
+        else:
+            self.output = input
+        return self.output
+
+    def backward_propagation(self, output_error):
+        if self.mask is None:
+            raise ValueError("Error")
+        return output_error * self.mask
+
+    def output_shape(self):
+        return self.input.shape
+
+    def parameters(self):
+        return 0

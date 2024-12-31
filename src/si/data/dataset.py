@@ -181,6 +181,36 @@ class KMeans(Transformer, Model):
             Predicted labels.
         """
         return np.apply_along_axis(self._get_closest_centroid, axis=1, arr=dataset.X)
+        
+    def dropna(self):
+        
+        mask = ~np.isnan(self.X).any(axis=1)
+        
+        self.X = self.X[mask]
+        self.y = self.y[mask]
+        return self 
+    
+    def fillna(self, value):
+        if value == "mean":
+            
+            means = np.nanmean(self.X, axis=0)
+            nan_mask = np.isnan(self.X)
+            self.X[nan_mask] = np.take(means, np.where(nan_mask)[1])
+        elif value == "median":
+            
+            medians = np.nanmedian(self.X, axis=0)
+            nan_mask = np.isnan(self.X)
+            self.X[nan_mask] = np.take(medians, np.where(nan_mask)[1])
+        else:
+            
+            self.X[np.isnan(self.X)] = value
+        
+        return self  
+    
+    def remove_by_index(self, index):
+        self.X = np.delete(self.X, index, axis=0)
+        self.y = np.delete(self.y, index, axis=0)
+        return self  
 
 
 if __name__ == '__main__':

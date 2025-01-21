@@ -143,31 +143,60 @@ class DenseLayer(Layer):
         return (self.n_units,) 
 
 class Dropout(Layer):
-    def __init__(self, probability):
-        if not 0 <= probability < 1:
-            raise ValueError("Error")
-        self.probability = probability
-        self.mask = None
-        self.input = None
-        self.output = None
 
-    def forward_propagation(self, input, training=True):
-        self.input = input
-        if training:
+    def __init__(self, probability: float, *kwargs):
+
+        super().__init__(*kwargs)
+        self.probability = probability
+
+        self.mask = None
+    
+    def forward_propagation(self, input: np.ndarray, training: bool) -> np.ndarray:
+
+        if training:    
+
             scaling_factor = 1 / (1 - self.probability)
+
             self.mask = np.random.binomial(1, 1 - self.probability, size=input.shape)
-            self.output = input * self.mask * scaling_factor
-        else:
+
+        
+            self.output = input * self.mask * scaling_factor  
+
+        else:           
             self.output = input
+
         return self.output
 
-    def backward_propagation(self, output_error):
-        if self.mask is None:
-            raise ValueError("Error")
+    def backward_propagation(self, output_error: np.ndarray) -> float:
+        
         return output_error * self.mask
 
-    def output_shape(self):
-        return self.input.shape
+    def output_shape(self) -> tuple:
+        
+        return self.input_shape()
 
-    def parameters(self):
+    def parameters(self) -> int:
+        
         return 0
+
+if __name__ == "__main__":
+    dropout_layer = Dropout(probability=0.3)
+
+    np.random.seed(42)
+    input_data = np.random.rand(5, 3) 
+
+    print("Forward Propagation (Training Mode):")
+    output_training = dropout_layer.forward_propagation(input=input_data, training=True)
+    print("Input:\n", input_data)
+    print("Output:\n", output_training)
+
+    print("\nForward Propagation (Inference Mode):")
+    output_inference = dropout_layer.forward_propagation(input=input_data, training=False)
+    print("Input:\n", input_data)
+    print("Output:\n", output_inference)
+
+    print("\nBackward Propagation:")
+    output_error = np.random.rand(5, 3)  
+    input_error = dropout_layer.backward_propagation(output_error)
+    print("Output Error:\n", output_error)
+    print("Input Error:\n", input_error)

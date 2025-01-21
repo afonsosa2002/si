@@ -1,40 +1,36 @@
-import numpy as np
+import os
 from unittest import TestCase
-from sklearn.datasets import load_iris
-from sklearn.linear_model import LogisticRegression
-from sklearn.metrics import accuracy_score
-from model_selection import randomized_search_cv
+import numpy as np
+from datasets import DATASETS_PATH
+from si.io.data_file import read_data_file
+from si.model_selection.randomized_search import randomized_search
+from si.models.logistic_regression import LogisticRegression
 
-
-class TestRandomizedSearchCV(TestCase):
-
+class TestRandomizedSearch(TestCase):
     def setUp(self):
-        iris = load_iris()
-        self.X = iris.data
-        self.y = iris.target
-        self.model = LogisticRegression(max_iter=200)
+        self.csv_file = os.path.join(DATASETS_PATH, 'breast_bin', 'breast-bin.csv')
 
-    def test_randomized_search_cv_with_valid_input(self):
-        hyperparameter_grid = {
-            'C': [0.01, 0.1, 1, 10],
-            'penalty': ['l2']
+        self.dataset = read_data_file(filename=self.csv_file, label=True, sep=",")
+
+    def test_randomized_search_cross_validation(self):
+
+        model = LogisticRegression()
+
+        parameter_grid_ = {
+            'l2_penalty': np.linspace(1, 10, 10),
+            'alpha': np.linspace(0.001, 0.0001, 100),
+            'max_iter': np.linspace(1000, 2000, 200)
         }
-        scoring = accuracy_score
-        results = randomized_search_cv(self.model, self.X, self.y, hyperparameter_grid, scoring, cv=3, n_iter=5)
 
-        self.assertTrue('hyperparameters' in results)
-        self.assertTrue('scores' in results)
-        self.assertTrue('best_hyperparameters' in results)
-        self.assertTrue('best_score' in results)
+        results_ = randomized_search(model,
+                                        self.dataset,
+                                        hyperparameter_grid=parameter_grid_,
+                                        cv=3,
+                                        n_iter=10)
 
-        self.assertGreater(results['best_score'], 0)  
-        self.assertIsNotNone(results['best_hyperparameters'])  
+        self.assertEqual(len(results_["scores"]), 10)
+        best_hyperparameters = results_['best_hyperparameters']
+        self.assertEqual(len(best_hyperparameters), 3)
 
-    def test_randomized_search_cv_with_invalid_model(self):
-        with self.assertRaises(ValueError):
-            hyperparameter_grid = {
-                'C': [0.01, 0.1, 1, 10],
-                'penalty': ['l2']
-            }
-            model = object()  
-            randomized_search_cv(model, self.X, self.y, hyperparameter_grid, accuracy_score, cv=3, n_iter=5)
+        best_score = results_['best_score']
+        self.assertEqual(np.round(best_score, 2), 0.97)

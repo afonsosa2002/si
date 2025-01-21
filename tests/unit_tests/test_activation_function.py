@@ -1,9 +1,6 @@
 from unittest import TestCase
-
 from datasets import DATASETS_PATH
-
 import os
-
 from si.io.data_file import read_data_file
 from si.model_selection.split import train_test_split
 from si.neural_networks.activation import ReLUActivation, SigmoidActivation
@@ -22,7 +19,13 @@ class TestSigmoidLayer(TestCase):
 
         sigmoid_layer = SigmoidActivation()
         result = sigmoid_layer.activation_function(self.dataset.X)
-        self.assertTrue(all([i >= 0 and i <= 1 for j in range(result.shape[1]) for i in result[:, j]]))
+        self.assertTrue(
+            all(
+                i >= 0 and i <= 1
+                for j in range(result.shape[1])
+                for i in result[:, j]
+            )
+        )
 
 
     def test_derivative(self):
@@ -46,7 +49,9 @@ class TestRELULayer(TestCase):
 
         relu_layer = ReLUActivation()
         result = relu_layer.activation_function(self.dataset.X)
-        self.assertTrue(all([i >= 0 for j in range(result.shape[1]) for i in result[:, j]]))
+        self.assertTrue(
+            all(i >= 0 for j in range(result.shape[1]) for i in result[:, j])
+        )
 
 
     def test_derivative(self):

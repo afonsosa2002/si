@@ -48,7 +48,6 @@ class MeanSquaredError(LossFunction):
     """
     Mean squared error loss function.
     """
-
     def loss(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         """
         Compute the mean squared error loss function.
@@ -66,6 +65,7 @@ class MeanSquaredError(LossFunction):
             The loss value.
         """
         return np.mean((y_true - y_pred) ** 2)
+        # return np.sum((y_true - y_pred) ** 2) / len(y_true)
 
     def derivative(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
         """
@@ -83,15 +83,15 @@ class MeanSquaredError(LossFunction):
         numpy.ndarray
             The derivative of the loss function.
         """
-        # To avoid the additional multiplication by -1 just swap the y_pred and y_true.
+        # To avoid the additional multiplication by -1 just swap the y_pred and y_true
         return 2 * (y_pred - y_true) / y_true.size
+        # return 2 * np.sum(y_true - y_pred) / len(y_true)
 
 
 class BinaryCrossEntropy(LossFunction):
     """
     Cross entropy loss function.
     """
-
     def loss(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
         """
         Compute the cross entropy loss function.
@@ -111,6 +111,7 @@ class BinaryCrossEntropy(LossFunction):
         # Avoid division by zero
         p = np.clip(y_pred, 1e-15, 1 - 1e-15)
         return -np.sum(y_true * np.log(p) + (1 - y_true) * np.log(1 - p))
+        # return -sum(y_true * np.log(y_pred) + (1 - y_true) * np.log(1 - y_pred))
 
     def derivative(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
         """
@@ -131,3 +132,18 @@ class BinaryCrossEntropy(LossFunction):
         # Avoid division by zero
         p = np.clip(y_pred, 1e-15, 1 - 1e-15)
         return - (y_true / p) + (1 - y_true) / (1 - p)
+        # return -(y_true / y_pred) + (1 - y_true) / (1 - y_pred)
+    
+
+
+class CategoricalCrossEntropy(LossFunction):
+
+    def loss(self, y_true: np.ndarray, y_pred: np.ndarray) -> float:
+        
+        y_pred = np.clip(y_pred, 1e-15, 1 - 1e-15)
+        return -np.sum(y_true * np.log(y_pred)) / y_true.shape[0]
+
+    def derivative(self, y_true: np.ndarray, y_pred: np.ndarray) -> np.ndarray:
+        
+        y_pred = np.clip(y_pred, 1e-15, 1 - 1e-15)
+        return -y_true / y_pred

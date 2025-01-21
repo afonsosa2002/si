@@ -4,9 +4,9 @@ from si.data.dataset import Dataset
 
 
 def read_csv(filename: str,
-             sep: str = ',',
-             features: bool = False,
-             label: bool = False) -> Dataset:
+            sep: str = ',',
+            features: bool = False,
+            label: bool = False) -> Dataset:
     """
     Reads a csv file (data file) into a Dataset object
 
@@ -55,10 +55,10 @@ def read_csv(filename: str,
 
 
 def write_csv(filename: str,
-              dataset: Dataset,
-              sep: str = ',',
-              features: bool = False,
-              label: bool = False) -> None:
+            dataset: Dataset,
+            sep: str = ',',
+            features: bool = False,
+            label: bool = False) -> None:
     """
     Writes a Dataset object to a csv file
 

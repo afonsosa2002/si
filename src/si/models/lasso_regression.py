@@ -1,54 +1,84 @@
 import numpy as np
+from si.base.model import Model
+from si.data.dataset import Dataset
+from si.metrics.mse import mse
 
-class LassoRegression:
-    def __init__(self, l1_penalty=0.1, scale=True):
+class LassoRegression(Model):
+
+    def __init__(self, l1_penalty: float = 1.0, 
+                scale: bool = True, 
+                max_iter: int = 1000, 
+                patience: int = 5, 
+                tolerance: float = 1e-4, **kwargs):
+
+        super().__init__(**kwargs)
         self.l1_penalty = l1_penalty
         self.scale = scale
+        self.max_iter = max_iter
+        self.patience = patience
+        self.tolerance = tolerance  
+
         self.theta = None
         self.theta_zero = None
         self.mean = None
         self.std = None
-    
-    def _fit(self, X, y, max_iter=1000, patience=10):
+
+    def _fit(self, dataset: Dataset) -> 'LassoRegression':
+
         if self.scale:
-            self.mean = np.mean(X, axis=0)
-            self.std = np.std(X, axis=0)
-            X_scaled = (X - self.mean) / self.std
+            
+            self.mean = np.nanmean(dataset.X, axis=0)
+            self.std = np.nanstd(dataset.X, axis=0)
+            X = (dataset.X - self.mean) / self.std
         else:
-            X_scaled = X
-        
-        n_samples, n_features = X_scaled.shape
+            
+            X = dataset.X
+
+        y = dataset.y
+        n_features = X.shape[1]
+
         self.theta = np.zeros(n_features)
         self.theta_zero = 0
-        prev_cost = float('inf')
-        for _ in range(max_iter):
-            for j in range(n_features):
-                residuals = y - self._predict(X_scaled)
-                
-                rho_j = np.dot(X_scaled[:, j], residuals)
-                if rho_j < -self.l1_penalty:
-                    self.theta[j] = (rho_j + self.l1_penalty) / n_samples
-                elif rho_j > self.l1_penalty:
-                    self.theta[j] = (rho_j - self.l1_penalty) / n_samples
-                else:
-                    self.theta[j] = 0
+
+        early_stopping = 0
+        for iter in range(self.max_iter):   
+            theta_prev = self.theta.copy()  
+
+            for j in range(n_features):     
             
-            self.theta_zero = np.mean(y - X_scaled.dot(self.theta))
-            cost = self._compute_cost(X_scaled, y)
-            if abs(prev_cost - cost) < 1e-6:
-                break  
-            prev_cost = cost
+                residuals = y - (X.dot(self.theta) - self.theta[j] * X[:, j])
+                rho_j = X[:, j].T.dot(residuals)
+
+                if rho_j > self.l1_penalty:
+                    self.theta[j] = (rho_j - self.l1_penalty) / np.sum(X[:, j] ** 2)    
+                elif rho_j < -self.l1_penalty:
+                    self.theta[j] = (rho_j + self.l1_penalty) / np.sum(X[:, j] ** 2)    
+                else:
+                    self.theta[j] = 0                                                   
+
+            self.theta_zero = np.mean(y - X.dot(self.theta))
+
+            if np.linalg.norm(self.theta - theta_prev, ord=1) < self.tolerance:
+                early_stopping += 1
+            else:
+                early_stopping = 0
+
+            if early_stopping >= self.patience:
+                break                               
+
+        return self
+
+    def _predict(self, dataset: Dataset) -> np.ndarray:
+
+        if self.scale:
+            X = (dataset.X - self.mean) / self.std
+        else:
+            X = dataset.X
+
+        predictions = X.dot(self.theta) + self.theta_zero
+
+        return predictions
+
+    def _score(self, dataset: Dataset, predictions: np.ndarray) -> float:
         
-    def _predict(self, X):
-        X_scaled = (X - self.mean) / self.std if self.scale else X
-        return np.dot(X_scaled, self.theta) + self.theta_zero
-    
-    def _score(self, X, y):
-        y_pred = self._predict(X)
-        return np.mean((y - y_pred) ** 2)
-    
-    def _compute_cost(self, X, y):
-        residuals = y - self._predict(X)
-        cost = np.sum(residuals**2) / (2 * len(y))  
-        l1_penalty = self.l1_penalty * np.sum(np.abs(self.theta))
-        return cost + l1_penalty
+        return mse(dataset.y, predictions)

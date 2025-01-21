@@ -1,31 +1,41 @@
-import numpy as np
-from metrics import rmse
+from typing import Callable, Union
 
-class KNNRegressor:
-    def __init__(self, k=3, distance=None):
+import numpy as np
+
+from src.si.base.model import Model
+from src.si.data.dataset import Dataset
+from src.si.metrics.rmse import rmse
+from src.si.statistics.euclidean_distance import euclidean_distance
+
+
+class KNNRegressor(Model):
+
+    def __init__(self, k: int = 1, distance: Callable = euclidean_distance, **kwargs):
+
+        super().__init__(**kwargs)
         self.k = k
-        self.distance = distance if distance else self.euclidean_distance
+        self.distance = distance
+
         self.dataset = None
 
-    def _fit(self, dataset):
+    def _fit(self, dataset: Dataset) -> 'KNNRegressor':
+
         self.dataset = dataset
         return self
 
-    def _predict(self, dataset):
-        X_train, y_train = self.dataset
-        X_test = dataset
-        predictions = []
+    def _get_closest_label(self, sample: np.ndarray) -> Union[int, str]:
 
-        for x_test in X_test:
-            distances = np.array([self.distance(x_test, x_train) for x_train in X_train])
-            nearest_indices = distances.argsort()[:self.k]
-            nearest_values = y_train[nearest_indices]
-            prediction = np.mean(nearest_values)
-            predictions.append(prediction)
+        distances = self.distance(sample, self.dataset.X)
+        k_nearest_neighbors = np.argsort(distances)[:self.k]
+        k_nearest_neighbors_labels = self.dataset.y[k_nearest_neighbors]
 
-        return np.array(predictions)
+        return np.mean(k_nearest_neighbors_labels)
 
-    def _score(self, dataset):
-        X_test, y_test = dataset
-        y_pred = self._predict(X_test)
-        return rmse(y_test, y_pred)
+    def _predict(self, dataset: Dataset) -> np.ndarray:
+
+        predictions = np.apply_along_axis(self._get_closest_label, axis=1, arr=dataset.X)
+        return predictions
+
+    def _score(self, dataset: Dataset, predictions: np.ndarray) -> float:
+        
+        return rmse(dataset.y, predictions)

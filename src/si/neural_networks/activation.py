@@ -178,28 +178,25 @@ class ReLUActivation(ActivationLayer):
         """
         return np.where(input >= 0, 1, 0)
     
-class TanhActivation:
-    def forward(self, inputs):
-        self.inputs = inputs
-        self.output = np.tanh(inputs)
-        return self.output
+class TanhActivation(ActivationLayer):
 
-    def backward(self, dvalues):
-        self.dinputs = dvalues * (1 - self.output ** 2)
-        return self.dinputs
-
-class SoftmaxActivation:
-    def forward(self, inputs):
-        self.inputs = inputs
-        exp_values = np.exp(inputs - np.max(inputs, axis=1, keepdims=True))
-        self.output = exp_values / np.sum(exp_values, axis=1, keepdims=True)
-        return self.output
-
-    def backward(self, dvalues):
-        self.dinputs = np.empty_like(dvalues)
+    def activation_function(self, input: np.ndarray):
+    
+        return (np.exp(input) - np.exp(-input)) / (np.exp(input) + np.exp(-input))
+    
+    def derivative(self, input: np.ndarray):
         
-        for index, (single_output, single_dvalues) in enumerate(zip(self.output, dvalues)):
-            single_output = single_output.reshape(-1, 1)
-            jacobian_matrix = np.diagflat(single_output) - np.dot(single_output, single_output.T)
-            self.dinputs[index] = np.dot(jacobian_matrix, single_dvalues)
-        return self.dinputs
+        tanh_output= self.activation_function(input)
+        return 1 - tanh_output**2
+
+class SoftmaxActivation(ActivationLayer):
+    
+
+    def activation_function(self, input: np.ndarray):
+
+        exp_shifted = np.exp(input - np.max(input, axis=1, keepdims=True))  
+        return exp_shifted / np.sum(exp_shifted, axis=1, keepdims=True)
+    
+    def derivative(self, input: np.ndarray):
+        
+        return self.activation_function(input)*(1-self.activation_function(input))

@@ -4,8 +4,8 @@ from si.data.dataset import Dataset
 
 
 def read_data_file(filename: str,
-                   sep: str = None,
-                   label: bool = False) -> Dataset:
+                sep: str = None,
+                label: bool = False) -> Dataset:
     """
     Reads a data file into a Dataset object
 

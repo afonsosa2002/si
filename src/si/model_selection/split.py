@@ -42,25 +42,24 @@ def train_test_split(dataset: Dataset, test_size: float = 0.2, random_state: int
     test = Dataset(dataset.X[test_idxs], dataset.y[test_idxs], features=dataset.features, label=dataset.label)
     return train, test
 
-def stratified_train_test_split(data, test_size: float, random_state: int = None) -> Tuple:
-    if random_state is not None:
-        np.random.seed(random_state)
-    target = data.labels  
-    unique_classes, class_counts = np.unique(target, return_counts=True)
-    train_indices = []
-    test_indices = []
-
-    for class_label, class_count in zip(unique_classes, class_counts):
-        class_indices = np.where(target == class_label)[0]
+def stratified_train_test_split(dataset: Dataset, test_size: float = 0.2, random_state: int = 42) -> Tuple[Dataset, Dataset]:
+    np.random.seed(random_state)
+    unique_classes, class_counts = np.unique(dataset.y, return_counts=True)
+    idxs_train =[]
+    idxs_test = []
+    for class_l, class_count in zip(unique_classes, class_counts):
         n_test_samples = int(class_count * test_size)
-        np.random.shuffle(class_indices)
 
-        test_indices_class = class_indices[:n_test_samples]
-        test_indices.extend(test_indices_class)
+        class_idxs = np.where(dataset.y == class_l)[0]
+        np.random.shuffle(class_idxs)
 
-        train_indices_class = class_indices[n_test_samples:]
-        train_indices.extend(train_indices_class)
+        test_class_indices = class_idxs[:n_test_samples]
 
-    train_data = data.select(train_indices)  
-    test_data = data.select(test_indices)  
-    return train_data, test_data
+        train_class_indices = class_idxs[n_test_samples:]
+
+        idxs_test.extend(test_class_indices)
+        idxs_train.extend(train_class_indices)
+
+    train = Dataset(dataset.X[idxs_train], dataset.y[idxs_train], features=dataset.features, label=dataset.label)
+    test = Dataset(dataset.X[idxs_test], dataset.y[idxs_test], features=dataset.features, label=dataset.label)
+    return train, test

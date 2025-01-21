@@ -1,28 +1,35 @@
 import numpy as np
+from si.base.transformer import Transformer
+from si.data.dataset import Dataset
 
-class PCA:
+class PCA(Transformer):
+
     def __init__(self, n_components):
+    
         self.n_components = n_components
         self.mean = None
         self.components = None
         self.explained_variance = None
 
-    def _fit(self, X):
+    def _fit(self, dataset: Dataset):
+        
+        X=dataset.X
         self.mean = np.mean(X, axis=0)
         X_centered = X - self.mean
 
         covariance_matrix = np.cov(X_centered, rowvar=False)
-
         eigenvalues, eigenvectors = np.linalg.eig(covariance_matrix)
-
         sorted_indices = np.argsort(eigenvalues)[::-1]
-        eigenvalues = eigenvalues[sorted_indices]
-        eigenvectors = eigenvectors[:, sorted_indices]
+        sorted_eigenvalues = eigenvalues[sorted_indices]
+        sorted_eigenvectors = eigenvectors[:, sorted_indices]
 
-        self.components = eigenvectors[:, :self.n_components]
-        self.explained_variance = eigenvalues[:self.n_components] / np.sum(eigenvalues)
+        self.components = sorted_eigenvectors[:, :self.n_components]
 
-    def _transform(self, X):
+        total_variance = np.sum(sorted_eigenvalues)
+        self.explained_variance = sorted_eigenvalues[:self.n_components] / total_variance
+
+    def _transform(self, dataset):
+        
+        X = dataset.X
         X_centered = X - self.mean
-
         return np.dot(X_centered, self.components)

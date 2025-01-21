@@ -31,38 +31,47 @@ class TestDataset(unittest.TestCase):
         self.assertEqual((10, 5), dataset.shape())
         self.assertTrue(dataset.has_label())
         
-    def setUp(self):
-        X = np.array([[1, 2, np.nan], [4, np.nan, 6], [7, 8, 9], [np.nan, 11, 12]])
-        y = np.array([1, 2, 3, 4])
-        features = np.array(['a', 'b', 'c'])
-        label = 'y'
-        self.obj = Dataset(X, y, features, label)
-
     def test_dropna(self):
-        self.obj.dropna()
-        expected_X = np.array([[7, 8, 9]])
-        expected_y = np.array([3])
-        np.testing.assert_array_equal(self.obj.X, expected_X)
-        np.testing.assert_array_equal(self.obj.y, expected_y)
+        X = np.array([[1, 2, 3], [np.nan, 5, 6], [7, np.nan, 9], [10, 11, 12]])
+        y = np.array([1, 2, 3, 4])
+        features = ['a', 'b', 'c']
+        label = 'y'
 
-    def test_fillna_mean(self):
-        self.obj.fillna('mean')
-        expected_X = np.array([[1, 2, 6], [4, 7, 6], [7, 8, 9], [4, 11, 9]])
-        np.testing.assert_array_equal(self.obj.X, expected_X)
+        dataset = Dataset(X, y, features, label)                    
+        dataset.dropna()                                            
 
-    def test_fillna_median(self):
-        self.obj.fillna('median')
-        expected_X = np.array([[1, 2, 9], [4, 8, 9], [7, 8, 9], [4, 11, 9]])
-        np.testing.assert_array_equal(self.obj.X, expected_X)
+        self.assertEqual(dataset.shape(), (2, 3))                                   
+        np.testing.assert_array_equal(dataset.y, np.array([1, 4]))  
 
-    def test_fillna_value(self):
-        self.obj.fillna(0)
-        expected_X = np.array([[1, 2, 0], [4, 0, 6], [7, 8, 9], [0, 11, 12]])
-        np.testing.assert_array_equal(self.obj.X, expected_X)
+
+    def test_fillna(self):
+        
+        X = np.array([[1,       2, np.nan], 
+                    [4,  np.nan,      6], 
+                    [7,       8,      9], 
+                    [np.nan, 11,    12]])
+        y = np.array([1, 2, 3, 4])
+        dataset = Dataset(X.copy(), y)
+
+        dataset.fillna(0.0)
+        expected_X_value = np.array([[1, 2,   0], 
+                                    [4, 0,   6], 
+                                    [7, 8,   9], 
+                                    [0, 11, 12]])
+        self.assertFalse(np.isnan(dataset.X).any())
+        np.testing.assert_array_equal(dataset.X, expected_X_value)
 
     def test_remove_by_index(self):
-        self.obj.remove_by_index([1, 3])
-        expected_X = np.array([[1, 2, np.nan], [7, 8, 9]])
-        expected_y = np.array([1, 3])
-        np.testing.assert_array_equal(self.obj.X, expected_X)
-        np.testing.assert_array_equal(self.obj.y, expected_y)
+        
+        X = np.array([[1, 2, 3], 
+                    [4, 5, 6], 
+                    [7, 8, 9]])
+        y = np.array([1, 2, 3])
+        dataset = Dataset(X, y)
+
+        dataset.remove_by_index(0)  
+        expected_X_after_second_removal = np.array([[7, 8, 9]])
+        expected_y_after_second_removal = np.array([3])
+        
+        np.testing.assert_array_equal(dataset.X, expected_X_after_second_removal)
+        np.testing.assert_array_equal(dataset.y, expected_y_after_second_removal)

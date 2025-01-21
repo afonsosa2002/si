@@ -8,6 +8,7 @@ from si.statistics.cosine_distance import cosine_distance
 class TestCosineDistance(TestCase):
 
     def setUp(self):
+        
         self.csv_file = os.path.join(DATASETS_PATH, 'iris', 'iris.csv')
         self.dataset = read_csv(filename=self.csv_file, features=True, label=True)
 
@@ -15,14 +16,10 @@ class TestCosineDistance(TestCase):
         x = np.array([1, 2, 3])
         y = np.array([[1, 0, 0], [0, 1, 0], [1, 2, 3]])
 
-        computed_distance = cosine_distance(x, y)
+        our_distance = cosine_distance(x, y)
 
-        manual_distance = 1 - np.array([
-            np.dot(x, y[0]) / (np.linalg.norm(x) * np.linalg.norm(y[0])),
-            np.dot(x, y[1]) / (np.linalg.norm(x) * np.linalg.norm(y[1])),
-            np.dot(x, y[2]) / (np.linalg.norm(x) * np.linalg.norm(y[2]))
-        ])
+        from sklearn.metrics.pairwise import cosine_distances
+        sklearn_distance = cosine_distances(x.reshape(1, -1), y).flatten()
 
-        # Verifica se as distâncias estão próximas
-        assert np.allclose(computed_distance, manual_distance), f"Computed: {computed_distance}, Manual: {manual_distance}"
+        assert np.allclose(our_distance, sklearn_distance), f"Our distance: {our_distance}, Sklearn distance: {sklearn_distance}"
 

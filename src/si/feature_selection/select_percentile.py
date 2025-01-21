@@ -1,24 +1,37 @@
 import numpy as np
-from sklearn.feature_selection import f_classif
-from sklearn.base import TransformerMixin
+from si.base.transformer import Transformer
+from si.data.dataset import Dataset
+from si.statistics import f_classification
 
-class SelectPercentile(TransformerMixin):
-    def __init__(self, score_func=f_classif, percentile=10):
-        self.score_func = score_func  
-        self.percentile = percentile  
-        
-    def _fit(self, X, y):
 
-        self.F, self.p = self.score_func(X, y)
+class SelectPercentile(Transformer):
+    
+    def __init__(self, percentile:float, score_func:callable = f_classification,**kwargs):
         
-        num_features = X.shape[1]
-        num_selected = int(np.ceil(num_features * self.percentile / 100))
-        
-        top_features_idx = np.argsort(self.F)[::-1][:num_selected]
-        
-        self.selected_features = top_features_idx
-        
+        super().__init__(**kwargs)
+        if isinstance(percentile,int):
+            self.percentile = percentile
+        else:
+            raise ValueError("ERROR")
+        self.score_func = score_func
+        self.F = None
+        self.p = None
+
+    def _fit(self,dataset:Dataset) -> 'SelectPercentile':
+
+        self.F,self.p = self.score_func(dataset) 
         return self
     
-    def _transform(self, X):
-        return X[:, self.selected_features]
+    def _transform(self, dataset: Dataset) -> Dataset:
+    
+        threshold= np.percentile(self.F,100-self.percentile)
+        mask = self.F > threshold
+        ties = np.where(self.F == threshold)[0]
+        if len(ties) != 0:
+            max_features = int (len(self.F)*self.percentile/100)
+            mask[ties[: max_features -mask.sum()]] = True
+
+        features = np.array(dataset.features)[mask]
+        
+        return Dataset(X=dataset.X[:, mask], y=dataset.y, features=list(features), label=dataset.label)
+        

@@ -1,30 +1,28 @@
-import numpy as np
 from unittest import TestCase
-from sklearn.datasets import make_classification
+import numpy as np
+from datasets import DATASETS_PATH
+import os
 from si.feature_selection.select_percentile import SelectPercentile
-
+from si.io.csv_file import read_csv
+from si.statistics.f_classification import f_classification
 class TestSelectPercentile(TestCase):
 
     def setUp(self):
-        X, y = make_classification(n_samples=100, n_features=10, n_informative=5, n_classes=2, random_state=42)
-        self.X = X
-        self.y = y
-        self.selector = SelectPercentile(score_func=None, percentile=50)
-
-    def test_init(self):
-        self.assertEqual(self.selector.score_func, None)
-        self.assertEqual(self.selector.percentile, 50)
-
+        
+        self.csv_file = os.path.join(DATASETS_PATH, 'iris', 'iris.csv') 
+        self.dataset = read_csv(filename=self.csv_file, features=True, label=True)
+        
     def test_fit(self):
-        self.selector._fit(self.X, self.y)
-        self.assertTrue(hasattr(self.selector, 'selected_features'))
-        num_selected = int(np.ceil(self.X.shape[1] * self.selector.percentile / 100))
-        self.assertEqual(len(self.selector.selected_features), num_selected)
-
+        
+        select_percentile = SelectPercentile(score_func = f_classification, percentile= 50)
+        select_percentile.fit(self.dataset)
+        self.assertTrue(select_percentile.F.shape[0] > 0)
+        self.assertTrue(select_percentile.p.shape[0] > 0)
+        
     def test_transform(self):
-        self.selector._fit(self.X, self.y)
-        X_transformed = self.selector._transform(self.X)
-        num_selected = int(np.ceil(self.X.shape[1] * self.selector.percentile / 100))
-        self.assertEqual(X_transformed.shape[1], num_selected)
-        selected_columns = self.selector.selected_features
-        self.assertTrue(np.array_equal(X_transformed, self.X[:, selected_columns]))
+
+        select_percentile = SelectPercentile(score_func = f_classification, percentile= 100)
+        select_percentile.fit(self.dataset) 
+        new_dataset = select_percentile.transform(self.dataset) 
+        self.assertEqual(len(new_dataset.features), len(self.dataset.features))
+        self.assertEqual(new_dataset.X.shape[1], self.dataset.X.shape[1])

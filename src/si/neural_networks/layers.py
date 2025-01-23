@@ -145,14 +145,18 @@ class DenseLayer(Layer):
 class Dropout(Layer):
 
     def __init__(self, probability: float, *kwargs):
-
+        """
+        Initializes the Dropout layer with a specified probability.
+        """
         super().__init__(*kwargs)
         self.probability = probability
 
         self.mask = None
     
     def forward_propagation(self, input: np.ndarray, training: bool) -> np.ndarray:
-
+        """
+        Performs the forward propagation of the Dropout layer. During training, applies the dropout mask.
+        """
         if training:    
 
             scaling_factor = 1 / (1 - self.probability)
@@ -168,15 +172,21 @@ class Dropout(Layer):
         return self.output
 
     def backward_propagation(self, output_error: np.ndarray) -> float:
-        
+        """
+        Performs the backward propagation of the Dropout layer. Applies the mask to propagate the error.
+        """
         return output_error * self.mask
 
     def output_shape(self) -> tuple:
-        
+        """
+        Returns the output shape of the Dropout layer, which is the same as the input.
+        """
         return self.input_shape()
 
     def parameters(self) -> int:
-        
+        """
+        Returns the number of parameters of the Dropout layer, which is zero, as there are no weights to be trained.
+        """
         return 0
 
 if __name__ == "__main__":

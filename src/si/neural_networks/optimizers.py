@@ -69,7 +69,9 @@ class SGD(Optimizer):
     class Adam(Optimizer):
     
         def __init__(self, learning_rate: float = 0.01, beta_1: float = 0.9, beta_2: float = 0.999, epsilon: float = 1e-8):
-            
+            """
+            Initializes the Adam optimizer with the specified parameters.
+            """
             super().__init__(learning_rate)
             self.beta_1 = beta_1
             self.beta_2 = beta_2
@@ -80,7 +82,9 @@ class SGD(Optimizer):
             self.t = 0      
 
         def update(self, w: np.ndarray, grad_loss_w: np.ndarray) -> np.ndarray:
-            
+            """
+            Updates the weights using the Adam optimization algorithm.
+            """
             if self.m is None or self.v is None:      
                 self.m = np.zeros(np.shape(w)) 
                 self.v = np.zeros(np.shape(w))

@@ -11,7 +11,9 @@ from src.si.statistics.euclidean_distance import euclidean_distance
 class KNNRegressor(Model):
 
     def __init__(self, k: int = 1, distance: Callable = euclidean_distance, **kwargs):
-
+        """
+        Initializes the KNNRegressor with the number of neighbors and a distance function.
+        """
         super().__init__(**kwargs)
         self.k = k
         self.distance = distance
@@ -19,12 +21,16 @@ class KNNRegressor(Model):
         self.dataset = None
 
     def _fit(self, dataset: Dataset) -> 'KNNRegressor':
-
+        """
+        Stores the dataset to be used for predictions.
+        """
         self.dataset = dataset
         return self
 
     def _get_closest_label(self, sample: np.ndarray) -> Union[int, str]:
-
+        """
+        Computes the average label of the k-nearest neighbors for a given sample.
+        """
         distances = self.distance(sample, self.dataset.X)
         k_nearest_neighbors = np.argsort(distances)[:self.k]
         k_nearest_neighbors_labels = self.dataset.y[k_nearest_neighbors]
@@ -32,10 +38,14 @@ class KNNRegressor(Model):
         return np.mean(k_nearest_neighbors_labels)
 
     def _predict(self, dataset: Dataset) -> np.ndarray:
-
+        """
+        Predicts the target values for the given dataset using k-nearest neighbors.
+        """
         predictions = np.apply_along_axis(self._get_closest_label, axis=1, arr=dataset.X)
         return predictions
 
     def _score(self, dataset: Dataset, predictions: np.ndarray) -> float:
-        
+        """
+        Calculates the root mean squared error (RMSE) between the true and predicted values.
+        """
         return rmse(dataset.y, predictions)

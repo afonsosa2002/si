@@ -10,7 +10,9 @@ class LassoRegression(Model):
                 max_iter: int = 1000, 
                 patience: int = 5, 
                 tolerance: float = 1e-4, **kwargs):
-
+        """        
+        Initializes the Lasso Regression model with specified hyperparameters.
+        """
         super().__init__(**kwargs)
         self.l1_penalty = l1_penalty
         self.scale = scale
@@ -24,7 +26,9 @@ class LassoRegression(Model):
         self.std = None
 
     def _fit(self, dataset: Dataset) -> 'LassoRegression':
-
+        """
+        Fits the Lasso model to the dataset.
+        """
         if self.scale:
             
             self.mean = np.nanmean(dataset.X, axis=0)
@@ -69,7 +73,9 @@ class LassoRegression(Model):
         return self
 
     def _predict(self, dataset: Dataset) -> np.ndarray:
-
+        """
+        Predicts target values using the fitted Lasso model.
+        """
         if self.scale:
             X = (dataset.X - self.mean) / self.std
         else:
@@ -80,5 +86,7 @@ class LassoRegression(Model):
         return predictions
 
     def _score(self, dataset: Dataset, predictions: np.ndarray) -> float:
-        
+        """        
+        Calculates the mean squared error (MSE) between true and predicted values.
+        """
         return mse(dataset.y, predictions)

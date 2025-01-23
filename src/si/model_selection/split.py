@@ -43,6 +43,9 @@ def train_test_split(dataset: Dataset, test_size: float = 0.2, random_state: int
     return train, test
 
 def stratified_train_test_split(dataset: Dataset, test_size: float = 0.2, random_state: int = 42) -> Tuple[Dataset, Dataset]:
+    """
+    Splits a dataset into stratified training and testing sets while preserving the class distribution.
+    """
     np.random.seed(random_state)
     unique_classes, class_counts = np.unique(dataset.y, return_counts=True)
     idxs_train =[]

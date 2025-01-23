@@ -7,7 +7,9 @@ from si.statistics import f_classification
 class SelectPercentile(Transformer):
     
     def __init__(self, percentile:float, score_func:callable = f_classification,**kwargs):
-        
+        """
+        Initializes the SelectPercentile transformer with a given percentile and scoring function.
+        """
         super().__init__(**kwargs)
         if isinstance(percentile,int):
             self.percentile = percentile
@@ -18,12 +20,16 @@ class SelectPercentile(Transformer):
         self.p = None
 
     def _fit(self,dataset:Dataset) -> 'SelectPercentile':
-
+        """
+        Computes feature scores using the scoring function on the provided dataset.
+        """
         self.F,self.p = self.score_func(dataset) 
         return self
     
     def _transform(self, dataset: Dataset) -> Dataset:
-    
+        """
+        Selects the top features based on the percentile threshold of the computed scores.
+        """
         threshold= np.percentile(self.F,100-self.percentile)
         mask = self.F > threshold
         ties = np.where(self.F == threshold)[0]

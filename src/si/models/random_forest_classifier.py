@@ -14,7 +14,9 @@ class RandomForestClassifier(Model):
                 mode: str = 'gini', 
                 seed: int = 42, 
                  **kwargs): 
-
+        """
+        Initializes the Random Forest Classifier with specified hyperparameters.
+        """
 
         super().__init__(**kwargs) 
         self.n_estimators = n_estimators
@@ -28,7 +30,9 @@ class RandomForestClassifier(Model):
     
 
     def _fit(self, dataset: Dataset) -> 'RandomForestClassifier':
-
+        """
+        Fits the Random Forest model to the dataset by training multiple decision trees.
+        """
         np.random.seed(self.seed) 
 
         if self.max_features is None:
@@ -59,7 +63,9 @@ class RandomForestClassifier(Model):
         return self
     
     def _predict(self, dataset) -> np.ndarray:
-
+        """
+        Predicts target values for the given dataset using the ensemble of decision trees.
+        """
         all_predictions = []
 
         for tree, features in self.trees: 
@@ -82,5 +88,7 @@ class RandomForestClassifier(Model):
         return np.array(final_predictions)
 
     def _score(self, dataset: Dataset, predictions: np.ndarray) -> float:
-
+        """
+        Calculates the accuracy of the predictions compared to the true target values.
+        """
         return accuracy(dataset.y, predictions) 

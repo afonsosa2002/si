@@ -199,6 +199,9 @@ class Dataset:
         return cls(X, y, features=features, label=label)
     
     def dropna(self):
+        """
+        Removes any rows in the dataset that contain missing values (NaN).
+        """    
         
         mask = ~np.any(np.isnan(self.X), axis=1)
 
@@ -207,7 +210,9 @@ class Dataset:
         return self
     
     def fillna(self, value: Union[float, str] = 'mean'):
-            
+        """
+        Fills missing values (NaN) in the feature matrix with specified values.
+        """    
         if isinstance(value, str):
             if value == 'mean':
                 fill_values = np.nanmean(self.X, axis=0)    
@@ -224,7 +229,9 @@ class Dataset:
     
     
     def remove_by_index(self, index: int):
-        
+        """
+        Removes a specific row from the dataset by its index.
+        """
         if index < 0 or index >= len(self.X):
             raise IndexError("Index is out of bounds!")
         

@@ -4,7 +4,9 @@ from si.data.dataset import Dataset
 from si.model_selection.cross_validate import k_fold_cross_validation
 
 def randomized_search(model, dataset: Dataset, hyperparameter_grid: Dict[str, Tuple], scoring: Callable = None, cv: int = 5, n_iter: int = None) -> Dict[str, Any]:
-    
+    """
+    Performs a randomized search for the best hyperparameters of a model over a specified grid.
+    """
     for parameter in hyperparameter_grid:
         if not hasattr(model, parameter):
             raise AttributeError(f"Model {model} does not have parameter {parameter}.")

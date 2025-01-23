@@ -181,11 +181,15 @@ class ReLUActivation(ActivationLayer):
 class TanhActivation(ActivationLayer):
 
     def activation_function(self, input: np.ndarray):
-    
+        """
+        Computes the hyperbolic tangent activation function for the given input.
+        """
         return (np.exp(input) - np.exp(-input)) / (np.exp(input) + np.exp(-input))
     
     def derivative(self, input: np.ndarray):
-        
+        """
+        Computes the derivative of the hyperbolic tangent activation function.
+        """
         tanh_output= self.activation_function(input)
         return 1 - tanh_output**2
 
@@ -193,10 +197,14 @@ class SoftmaxActivation(ActivationLayer):
     
 
     def activation_function(self, input: np.ndarray):
-
+        """
+        Computes the softmax activation function for the given input.
+        """
         exp_shifted = np.exp(input - np.max(input, axis=1, keepdims=True))  
         return exp_shifted / np.sum(exp_shifted, axis=1, keepdims=True)
     
     def derivative(self, input: np.ndarray):
-        
+        """
+        Computes the derivative of the softmax activation function.
+        """
         return self.activation_function(input)*(1-self.activation_function(input))
